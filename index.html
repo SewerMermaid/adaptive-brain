@@ -569,10 +569,11 @@ function copySimplified() {
 // ─────────────────────────────────────────────
 function startAudio() {
   showScreen('screen-audio');
-  renderWordSpans(S.text);
   S.isPlaying = false;
   document.getElementById('play-btn').textContent = '▶';
   document.getElementById('audio-progress').textContent = '—';
+  // Defer render to ensure DOM is ready after screen transition
+  setTimeout(() => renderWordSpans(S.text), 50);
 }
 
 function renderWordSpans(text) {
