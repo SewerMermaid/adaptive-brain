@@ -404,6 +404,8 @@ async function begin() {
   S.text = text;
 
   if (S.eslEnabled) {
+    // Check key before doing anything
+    if (!getKey()) { openKeyModal(); return; }
     // Simplify first, then hand off to chosen mode
     showScreen('screen-esl');
     document.getElementById('esl-original').textContent = S.text;
@@ -425,7 +427,7 @@ async function begin() {
         <button class="btn btn-ghost" onclick="copySimplified()">⎘ Copy</button>`;
     } catch(e) {
       document.getElementById('esl-simplified').innerHTML =
-        '<div style="color:var(--error);font-size:12px;padding:12px 0">Simplification failed. Check your API key.</div>';
+        `<div style="color:var(--error);font-size:12px;padding:12px 0">Error: ${e.message}</div>`;
     }
   } else {
     if (S.mode === 'audio') startAudio();
