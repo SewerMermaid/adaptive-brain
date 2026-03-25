@@ -186,6 +186,11 @@ html,body{height:100%;font-family:var(--font-m);background:var(--bg);color:var(-
 .key-input:focus{border-color:rgba(255,255,255,.22)}
 .key-input::placeholder{color:var(--text-dim)}
 .modal-actions{display:flex;gap:10px}
+.provider-tabs{display:flex;gap:8px;margin-bottom:10px}
+.provider-tab{flex:1;padding:8px;border-radius:6px;border:1px solid var(--border);background:var(--bg3);color:var(--text-dim);font-family:var(--font-m);font-size:11px;font-weight:600;cursor:pointer;transition:all .2s}
+.provider-tab:hover{color:var(--text)}
+.provider-tab.active{background:var(--esl-dim);border-color:rgba(125,211,252,.3);color:var(--esl)}
+.provider-hint{font-size:10px;color:var(--text-dim);margin-bottom:10px}
 .key-indicator{display:inline-flex;align-items:center;gap:6px;font-size:10px;padding:4px 10px;border-radius:4px;cursor:pointer;border:1px solid var(--border);background:var(--bg3);color:var(--text-dim);transition:all .2s;position:fixed;bottom:16px;right:16px;z-index:100}
 .key-indicator:hover{border-color:rgba(255,255,255,.2);color:var(--text)}
 .key-indicator.set{border-color:rgba(134,239,172,.2);color:var(--success);background:rgba(134,239,172,.08)}
@@ -196,9 +201,15 @@ html,body{height:100%;font-family:var(--font-m);background:var(--bg);color:var(-
 <!-- KEY MODAL -->
 <div class="modal-overlay hidden" id="key-modal">
   <div class="modal">
-    <div class="modal-title">Enter API Key</div>
-    <div class="modal-sub">Your key is stored only in your browser (localStorage) and never sent anywhere except directly to Anthropic's API. Get a key at <a href="https://console.anthropic.com" target="_blank" style="color:var(--esl)">console.anthropic.com</a>.<br><br>ESL and Focus modes require a key. Audio mode works without one.</div>
-    <input class="key-input" id="key-input" type="password" placeholder="sk-ant-api03-…" spellcheck="false">
+    <div class="modal-title">API Key</div>
+    <div class="modal-sub">Select your provider and paste your key. It stays in your browser only.</div>
+    <div class="provider-tabs" id="provider-tabs">
+      <button class="provider-tab active" data-p="gemini" onclick="selectProvider('gemini')">Gemini</button>
+      <button class="provider-tab" data-p="anthropic" onclick="selectProvider('anthropic')">Anthropic</button>
+      <button class="provider-tab" data-p="openai" onclick="selectProvider('openai')">OpenAI</button>
+    </div>
+    <div class="provider-hint" id="provider-hint">Get a key at <a href="https://aistudio.google.com" target="_blank" style="color:var(--esl)">aistudio.google.com</a></div>
+    <input class="key-input" id="key-input" type="password" placeholder="AIza…" spellcheck="false">
     <div class="modal-actions">
       <button class="btn btn-ghost" style="flex:1" onclick="saveKey()">Save Key</button>
       <button class="btn btn-ghost" onclick="closeKeyModal()">Cancel</button>
@@ -441,19 +452,34 @@ function proceedAfterESL() {
 }
 
 // ─────────────────────────────────────────────
-// API KEY
+// API KEY + PROVIDER
 // ─────────────────────────────────────────────
-function getKey() { return localStorage.getItem('ss_api_key') || ''; }
+const PROVIDERS = {
+  gemini:    { hint: 'Get a key at <a href="https://aistudio.google.com" target="_blank" style="color:var(--esl)">aistudio.google.com</a>', placeholder: 'AIza…' },
+  anthropic: { hint: 'Get a key at <a href="https://console.anthropic.com" target="_blank" style="color:var(--esl)">console.anthropic.com</a>', placeholder: 'sk-ant-…' },
+  openai:    { hint: 'Get a key at <a href="https://platform.openai.com" target="_blank" style="color:var(--esl)">platform.openai.com</a>', placeholder: 'sk-…' },
+};
+
+function getKey()      { return localStorage.getItem('ss_api_key') || ''; }
+function getProvider() { return localStorage.getItem('ss_provider') || 'gemini'; }
+
+function selectProvider(p) {
+  localStorage.setItem('ss_provider', p);
+  document.querySelectorAll('.provider-tab').forEach(t => t.classList.toggle('active', t.dataset.p === p));
+  document.getElementById('provider-hint').innerHTML = PROVIDERS[p].hint;
+  document.getElementById('key-input').placeholder = PROVIDERS[p].placeholder;
+}
 
 function updateKeyIndicator() {
-  const k = getKey();
+  const k = getKey(); const p = getProvider();
   const ind = document.getElementById('key-indicator');
   const dot = document.getElementById('key-dot');
   const lbl = document.getElementById('key-label');
+  const names = {gemini:'Gemini', anthropic:'Anthropic', openai:'OpenAI'};
   if (k) {
     ind.classList.add('set');
     dot.textContent = '●';
-    lbl.textContent = 'API Key Set';
+    lbl.textContent = `${names[p]} Key Set`;
   } else {
     ind.classList.remove('set');
     dot.textContent = '○';
@@ -462,13 +488,13 @@ function updateKeyIndicator() {
 }
 
 function openKeyModal() {
+  const p = getProvider();
+  selectProvider(p);
   document.getElementById('key-input').value = getKey();
   document.getElementById('key-modal').classList.remove('hidden');
 }
 
-function closeKeyModal() {
-  document.getElementById('key-modal').classList.add('hidden');
-}
+function closeKeyModal() { document.getElementById('key-modal').classList.add('hidden'); }
 
 function saveKey() {
   const val = document.getElementById('key-input').value.trim();
@@ -481,27 +507,48 @@ function saveKey() {
 document.addEventListener('DOMContentLoaded', updateKeyIndicator);
 
 // ─────────────────────────────────────────────
-// CLAUDE API
+// MULTI-PROVIDER AI CALL
 // ─────────────────────────────────────────────
 async function callClaude(system, user, maxTokens = 1200) {
   const key = getKey();
-  if (!key) {
-    openKeyModal();
-    throw new Error('No API key set.');
+  if (!key) { openKeyModal(); throw new Error('No API key set.'); }
+  const provider = getProvider();
+
+  if (provider === 'anthropic') {
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json','x-api-key':key,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
+      body: JSON.stringify({ model:'claude-sonnet-4-20250514', max_tokens:maxTokens, system, messages:[{role:'user',content:user}] }),
+    });
+    const data = await res.json();
+    if (data.error) throw new Error(data.error.message);
+    return data.content?.[0]?.text || '';
   }
-  const res = await fetch('https://api.anthropic.com/v1/messages', {
-    method: 'POST',
-    headers: {'Content-Type':'application/json','x-api-key':key,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
-    body: JSON.stringify({
-      model: 'claude-sonnet-4-20250514',
-      max_tokens: maxTokens,
-      system,
-      messages: [{role:'user', content:user}],
-    }),
-  });
-  const data = await res.json();
-  if (data.error) throw new Error(data.error.message);
-  return data.content?.[0]?.text || '';
+
+  if (provider === 'gemini') {
+    const model = 'gemini-2.0-flash';
+    const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${key}`, {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({ contents:[{parts:[{text: system + '\n\n' + user}]}], generationConfig:{maxOutputTokens:maxTokens} }),
+    });
+    const data = await res.json();
+    if (data.error) throw new Error(data.error.message);
+    return data.candidates?.[0]?.content?.parts?.[0]?.text || '';
+  }
+
+  if (provider === 'openai') {
+    const res = await fetch('https://api.openai.com/v1/chat/completions', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json','Authorization':`Bearer ${key}`},
+      body: JSON.stringify({ model:'gpt-4o-mini', max_tokens:maxTokens, messages:[{role:'system',content:system},{role:'user',content:user}] }),
+    });
+    const data = await res.json();
+    if (data.error) throw new Error(data.error.message);
+    return data.choices?.[0]?.message?.content || '';
+  }
+
+  throw new Error('Unknown provider');
 }
 
 // ─────────────────────────────────────────────
