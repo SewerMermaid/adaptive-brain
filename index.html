@@ -363,6 +363,7 @@ html,body{height:100%;font-family:var(--font-m);background:var(--bg);color:var(-
 const S = {
   mode: null, text: '', xp: 0,
   eslEnabled: false, simplifiedText: '',
+  wordList: [],
   chunks: [], questions: [], bossQ: null,
   currentChunk: 0, questionAnswered: false, isBoss: false,
   isPlaying: false, playSpeed: 1,
@@ -424,8 +425,9 @@ async function begin() {
     document.getElementById('esl-simplified').innerHTML =
       '<div class="loading-state"><div class="spinner"></div><span>Simplifying your notes…</span></div>';
     try {
+      const wordListStr = S.wordList.length ? S.wordList.join(', ') : 'simple common English words';
       const simplified = await callClaude(
-        'You are a language simplification assistant for ESL university students. Rewrite the given text using ONLY the 500 most common words in English. Rules: 1) Every word you use must be from the 500 most common English words — no exceptions except for rule 2. 2) Preserve technical and scientific terms exactly as written (e.g. "mitochondria", "ATP", "glycolysis", "oxidative phosphorylation", "electron transport chain") — these cannot be replaced. 3) All other non-technical words must be replaced with simpler common equivalents from the 500 most common words. 4) Break long sentences into short simple ones. 5) Keep ALL the same information — do not omit anything. Return ONLY the rewritten text, no commentary.',
+        `You are a language simplification assistant for ESL university students. Rewrite the given text using ONLY the following allowed words: ${wordListStr}. Rules: 1) Every non-technical word you use MUST appear in the allowed words list above. 2) Preserve all scientific and technical terms exactly as written (e.g. "mitochondria", "ATP", "glycolysis", "oxidative phosphorylation") — these are exempt from the word list. 3) Break long sentences into short simple ones. 4) Keep ALL the same information — do not omit anything. Return ONLY the rewritten text, no commentary.`,
         S.text, 2000
       );
       S.simplifiedText = simplified;
@@ -504,7 +506,15 @@ function saveKey() {
   closeKeyModal();
 }
 
-document.addEventListener('DOMContentLoaded', updateKeyIndicator);
+document.addEventListener('DOMContentLoaded', () => {
+  updateKeyIndicator();
+  fetch('wordlist.txt')
+    .then(r => r.text())
+    .then(t => {
+      S.wordList = t.split('\n').map(w => w.trim().toLowerCase()).filter(Boolean);
+    })
+    .catch(() => console.warn('wordlist.txt not found — ESL prompt will run without word list'));
+});
 
 // ─────────────────────────────────────────────
 // MULTI-PROVIDER AI CALL
