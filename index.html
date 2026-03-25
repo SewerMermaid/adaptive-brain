@@ -425,7 +425,7 @@ async function begin() {
       '<div class="loading-state"><div class="spinner"></div><span>Simplifying your notes…</span></div>';
     try {
       const simplified = await callClaude(
-        'You are a language simplification assistant for ESL university students. Rewrite the given text using only simple, common English words. Rules: 1) Replace complex Latinate/academic words with simple ones (e.g. "utilize"→"use", "demonstrate"→"show", "facilitate"→"help", "subsequent"→"next", "commence"→"start", "generate"→"make"). 2) Keep technical terms that cannot be simplified (scientific names, proper nouns, key concepts like "ATP", "mitochondria", "glycolysis"). 3) Break long sentences into shorter ones. 4) Keep ALL the same information — do not omit anything. 5) Target Grade 6 reading level. Return ONLY the simplified text, no commentary.',
+        'You are a language simplification assistant for ESL university students. Rewrite the given text using ONLY the 500 most common words in English. Rules: 1) Every word you use must be from the 500 most common English words — no exceptions except for rule 2. 2) Preserve technical and scientific terms exactly as written (e.g. "mitochondria", "ATP", "glycolysis", "oxidative phosphorylation", "electron transport chain") — these cannot be replaced. 3) All other non-technical words must be replaced with simpler common equivalents from the 500 most common words. 4) Break long sentences into short simple ones. 5) Keep ALL the same information — do not omit anything. Return ONLY the rewritten text, no commentary.',
         S.text, 2000
       );
       S.simplifiedText = simplified;
