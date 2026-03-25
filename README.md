@@ -2,7 +2,7 @@
 
 > GDG UTSC AI Case Competition 2026 · Build with AI · Powered by Google
 
-A browser-based study companion that adapts any academic content to match your learning style. No backend, no installation — runs entirely in your browser as a single HTML file.
+A browser-based study companion that adapts any academic content to match your learning style. No backend, no installation - runs entirely in your browser as a single HTML file.
 
 **Live demo:** [sewermermaid.github.io/adaptive-brain](https://sewermermaid.github.io/adaptive-brain)
 
@@ -10,7 +10,7 @@ A browser-based study companion that adapts any academic content to match your l
 
 ## The Problem
 
-The standard way of studying — reading walls of text, memorizing dense notes — is designed for one type of learner. Students with ADHD, ESL students, and auditory learners are left behind by tools that don't adapt to them.
+The standard way of studying - reading walls of text, memorizing dense notes - is designed for one type of learner. Students with ADHD, ESL students, and auditory learners are left behind by tools that don't adapt to them.
 
 ## The Solution
 
@@ -32,22 +32,22 @@ Both modes operate on whatever came out of Step 1 — so an ESL student with ADH
 
 ## Features
 
-- **No installation** — single `index.html`, open in any modern browser
-- **Bring your own key** — supports Gemini, Anthropic, and OpenAI API keys. Keys stored in `localStorage`, never leave your device
-- **ESL preprocessing** — AI rewrites academic language into plain English without losing technical terminology
-- **Audio playback** — native browser TTS with synchronized word highlighting, no external service required
-- **Chunked study flow** — content broken into digestible sections, each gated behind a comprehension check
-- **Boss question** — synthesis question at the end of each session requiring deeper understanding
-- **XP + rewards** — earn points for correct answers, unlock student discounts (Tim Hortons, Spotify, UNiDAYS, DoorDash, and more)
+- **No installation** - single `index.html`, open in any modern browser
+- **Bring your own key** - supports Gemini, Anthropic, and OpenAI API keys. Keys stored in `localStorage`, never leave your device
+- **ESL preprocessing** - AI rewrites academic language into plain English without losing technical terminology
+- **Audio playback** - native browser TTS with synchronized word highlighting, no external service required
+- **Chunked study flow** - content broken into digestible sections, each gated behind a comprehension check
+- **Boss question** - synthesis question at the end of each session requiring deeper understanding
+- **XP + rewards** - earn points for correct answers, unlock student discounts (Tim Hortons, Spotify, UNiDAYS, DoorDash, and more)
 
 ---
 
 ## Tech Stack
 
-- Vanilla HTML/CSS/JS — zero dependencies, zero frameworks
-- [Web Speech API](https://developer.mozilla.org/en-US/docs/Web/API/Web_Speech_API) — native browser TTS, no external service
-- Gemini API (default) / Anthropic Claude API / OpenAI API — ESL simplification + question generation
-- GitHub Pages — static hosting
+- Vanilla HTML/CSS/JS - zero dependencies, zero frameworks
+- [Web Speech API](https://developer.mozilla.org/en-US/docs/Web/API/Web_Speech_API) - native browser TTS, no external service
+- Gemini API (default) / Anthropic Claude API / OpenAI API - ESL simplification + question generation
+- GitHub Pages - static hosting
 
 ---
 
@@ -68,13 +68,13 @@ Click the key indicator in the bottom-right corner, select your provider (Gemini
 ## Design Decisions
 
 **Why is ESL a preprocessing step, not a separate mode?**
-A student who needs language simplification still needs to actually study the content. ESL simplification and study mode (audio or focus) are sequential, not parallel — building them as a pipeline rather than silos reflects how a real student would use them.
+A student who needs language simplification still needs to actually study the content. ESL simplification and study mode (audio or focus) are sequential, not parallel - building them as a pipeline rather than silos reflects how a real student would use them.
 
 **Why no LLM for audio?**
 The Web Speech API is built into Chrome, Edge, and Safari. It's instant, offline, and free. An LLM adds latency and cost with no quality benefit for this use case.
 
 **Why deterministic chunking for ADHD?**
-ADHD learners benefit from structural intervention, not content rewriting. Enforced gates address the core problem — attention management — more directly than paraphrasing the content.
+ADHD learners benefit from structural intervention, not content rewriting. Enforced gates address the core problem - attention management - more directly than paraphrasing the content.
 
 **Why a rewards system?**
 Existing EdTech gamification is cosmetic. Tying XP to real student discounts creates genuine motivation and a viable monetization path without ads or subscriptions.
