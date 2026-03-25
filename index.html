@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>StudyShift — Learn Your Way</title>
+<title>Adaptive Brain — Learn Your Way</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=JetBrains+Mono:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
@@ -166,6 +166,16 @@ html,body{height:100%;font-family:var(--font-m);background:var(--bg);color:var(-
 .unlock-badge{position:absolute;top:12px;right:12px;background:var(--focus);color:var(--bg);font-size:9px;font-weight:700;letter-spacing:.08em;padding:2px 8px;border-radius:3px}
 .rewards-note{text-align:center;margin-top:24px;font-size:10px;color:var(--text-dim);letter-spacing:.06em}
 
+/* STEP FLOW */
+.step-row{display:flex;align-items:center;gap:10px}
+.step-num{width:22px;height:22px;border-radius:50%;background:var(--bg4);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:var(--text-dim);flex-shrink:0}
+.esl-toggle-wrap{}
+.esl-toggle-card{display:flex;align-items:center;justify-content:space-between;background:var(--bg2);border:1.5px solid var(--border);border-radius:var(--radius);padding:16px 20px;cursor:pointer;transition:all .2s}
+.esl-toggle-card:hover{border-color:rgba(125,211,252,.25)}
+.esl-toggle-card.active{border-color:rgba(125,211,252,.5);background:var(--esl-dim)}
+.esl-check{font-size:18px;color:var(--text-dim);transition:all .2s;flex-shrink:0}
+.esl-toggle-card.active .esl-check{color:var(--esl)}
+
 /* KEY MODAL */
 .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:1000;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(4px)}
 .modal-overlay.hidden{display:none}
@@ -204,28 +214,41 @@ html,body{height:100%;font-family:var(--font-m);background:var(--bg);color:var(-
 
 <!-- ====== LANDING ====== -->
 <div id="screen-landing" class="screen active">
-  <div style="max-width:880px;margin:0 auto">
+  <div style="max-width:760px;margin:0 auto">
     <div class="lh">
-      <div class="logo">Study<span>Shift</span></div>
+      <div class="logo">Adaptive<span>Brain</span></div>
       <div class="lsub">Adaptive Learning Companion</div>
     </div>
-    <p class="slabel">Your notes</p>
-    <div class="tw">
+
+    <!-- STEP 1 -->
+    <div class="step-row"><span class="step-num">1</span><p class="slabel" style="margin:0">Paste your notes</p></div>
+    <div class="tw" style="margin-top:10px">
       <textarea id="notes-input" placeholder="Paste any lecture notes, textbook excerpt, or study material here…"></textarea>
       <button class="sample-btn" onclick="loadSample()">Load Sample ↗</button>
     </div>
-    <p class="slabel">Choose your mode</p>
-    <div class="modes-grid">
-      <div class="mode-card esl" onclick="selectMode('esl')">
-        <span class="mode-icon">🌍</span>
-        <div class="mode-title">ESL Mode</div>
-        <div class="mode-desc">Complex academic text rewritten using only simple, everyday words</div>
-        <div class="mode-tag">Global Scholar</div>
+
+    <!-- STEP 2 -->
+    <div class="step-row" style="margin-top:28px"><span class="step-num">2</span><p class="slabel" style="margin:0">Simplify for ESL? <span style="color:var(--text-dim);font-size:9px;letter-spacing:.08em">(OPTIONAL)</span></p></div>
+    <div class="esl-toggle-wrap" style="margin-top:10px">
+      <div class="esl-toggle-card" id="esl-toggle" onclick="toggleESL()">
+        <div style="display:flex;align-items:center;gap:12px">
+          <span style="font-size:22px">🌍</span>
+          <div>
+            <div style="font-size:13px;color:var(--text);margin-bottom:2px">Simplify language first</div>
+            <div style="font-size:11px;color:var(--text-dim)">Rewrites academic vocabulary into plain English before studying</div>
+          </div>
+        </div>
+        <div class="esl-check" id="esl-check">○</div>
       </div>
+    </div>
+
+    <!-- STEP 3 -->
+    <div class="step-row" style="margin-top:28px"><span class="step-num">3</span><p class="slabel" style="margin:0">Choose how to study</p></div>
+    <div class="modes-grid" style="margin-top:10px;grid-template-columns:1fr 1fr">
       <div class="mode-card audio" onclick="selectMode('audio')">
         <span class="mode-icon">🎧</span>
         <div class="mode-title">Audio Mode</div>
-        <div class="mode-desc">Listen to your notes with live word-by-word highlighting as you follow along</div>
+        <div class="mode-desc">Listen with live word-by-word highlighting while you follow along</div>
         <div class="mode-tag">Multi-Modal Learner</div>
       </div>
       <div class="mode-card focus" onclick="selectMode('focus')">
@@ -235,7 +258,7 @@ html,body{height:100%;font-family:var(--font-m);background:var(--bg);color:var(-
         <div class="mode-tag">ADHD / Focus-Seeking</div>
       </div>
     </div>
-    <button class="begin-btn" id="begin-btn" onclick="begin()" disabled>Select a Mode to Begin</button>
+    <button class="begin-btn" id="begin-btn" onclick="begin()" disabled style="margin-top:20px">Select a Study Mode to Begin</button>
   </div>
 </div>
 
@@ -328,9 +351,9 @@ html,body{height:100%;font-family:var(--font-m);background:var(--bg);color:var(-
 // ─────────────────────────────────────────────
 const S = {
   mode: null, text: '', xp: 0,
+  eslEnabled: false, simplifiedText: '',
   chunks: [], questions: [], bossQ: null,
   currentChunk: 0, questionAnswered: false, isBoss: false,
-  simplifiedText: '',
   isPlaying: false, playSpeed: 1,
   wordEls: [], wordPositions: [],
 };
@@ -356,22 +379,62 @@ function showScreen(id) {
 function goBack() { stopTTS(); showScreen('screen-landing'); }
 function loadSample() { document.getElementById('notes-input').value = SAMPLE; }
 
+function toggleESL() {
+  S.eslEnabled = !S.eslEnabled;
+  const card = document.getElementById('esl-toggle');
+  const check = document.getElementById('esl-check');
+  card.classList.toggle('active', S.eslEnabled);
+  check.textContent = S.eslEnabled ? '●' : '○';
+}
+
 function selectMode(m) {
   S.mode = m;
   document.querySelectorAll('.mode-card').forEach(c => c.classList.remove('selected'));
   document.querySelector(`.mode-card.${m}`).classList.add('selected');
   const btn = document.getElementById('begin-btn');
   btn.disabled = false;
-  const labels = {esl:'ESL', audio:'Audio', focus:'Focus'};
-  btn.textContent = `Begin ${labels[m]} Mode →`;
+  const eslNote = S.eslEnabled ? ' (with ESL simplification)' : '';
+  const labels = {audio:'Audio', focus:'Focus'};
+  btn.textContent = `Begin ${labels[m]} Mode${eslNote} →`;
 }
 
 async function begin() {
   const text = document.getElementById('notes-input').value.trim();
   if (!text) { alert('Please paste some notes first.'); return; }
   S.text = text;
-  if (S.mode === 'esl')   startESL();
-  else if (S.mode === 'audio') startAudio();
+
+  if (S.eslEnabled) {
+    // Simplify first, then hand off to chosen mode
+    showScreen('screen-esl');
+    document.getElementById('esl-original').textContent = S.text;
+    document.getElementById('esl-listen-btn').style.display = 'none';
+    document.getElementById('esl-simplified').innerHTML =
+      '<div class="loading-state"><div class="spinner"></div><span>Simplifying your notes…</span></div>';
+    try {
+      const simplified = await callClaude(
+        'You are a language simplification assistant for ESL university students. Rewrite the given text using only simple, common English words. Rules: 1) Replace complex Latinate/academic words with simple ones (e.g. "utilize"→"use", "demonstrate"→"show", "facilitate"→"help", "subsequent"→"next", "commence"→"start", "generate"→"make"). 2) Keep technical terms that cannot be simplified (scientific names, proper nouns, key concepts like "ATP", "mitochondria", "glycolysis"). 3) Break long sentences into shorter ones. 4) Keep ALL the same information. 5) Target Grade 6 reading level. Return ONLY the simplified text.',
+        S.text, 900
+      );
+      S.simplifiedText = simplified;
+      S.text = simplified; // use simplified for downstream mode
+      document.getElementById('esl-simplified').innerHTML =
+        `<div class="col-text">${simplified.replace(/\n/g,'<br>')}</div>`;
+      // Show continue button
+      const actions = document.querySelector('.esl-actions');
+      actions.innerHTML = `<button class="btn btn-focus" onclick="proceedAfterESL()">Continue to ${S.mode === 'audio' ? '🎧 Audio' : '⚡ Focus'} Mode →</button>
+        <button class="btn btn-ghost" onclick="copySimplified()">⎘ Copy</button>`;
+    } catch(e) {
+      document.getElementById('esl-simplified').innerHTML =
+        '<div style="color:var(--error);font-size:12px;padding:12px 0">Simplification failed. Check your API key.</div>';
+    }
+  } else {
+    if (S.mode === 'audio') startAudio();
+    else if (S.mode === 'focus') startFocus();
+  }
+}
+
+function proceedAfterESL() {
+  if (S.mode === 'audio') startAudio();
   else if (S.mode === 'focus') startFocus();
 }
 
@@ -440,37 +503,12 @@ async function callClaude(system, user, maxTokens = 1200) {
 }
 
 // ─────────────────────────────────────────────
-// ESL MODE
+// ESL HELPERS
 // ─────────────────────────────────────────────
-async function startESL() {
-  showScreen('screen-esl');
-  document.getElementById('esl-original').textContent = S.text;
-  document.getElementById('esl-listen-btn').disabled = true;
-  document.getElementById('esl-simplified').innerHTML =
-    '<div class="loading-state"><div class="spinner"></div><span>Simplifying your notes…</span></div>';
-
-  try {
-    const simplified = await callClaude(
-      'You are a language simplification assistant for ESL university students. Rewrite the given text using only simple, common English words. Rules: 1) Replace complex Latinate/academic words with simple ones (e.g. "utilize"→"use", "demonstrate"→"show", "facilitate"→"help", "subsequent"→"next", "commence"→"start", "generate"→"make"). 2) Keep technical terms that cannot be simplified (scientific names, proper nouns, key concepts like "ATP", "mitochondria", "glycolysis"). 3) Break long sentences into shorter ones. 4) Keep ALL the same information. 5) Target Grade 6 reading level. Return ONLY the simplified text.',
-      S.text, 900
-    );
-    S.simplifiedText = simplified;
-    document.getElementById('esl-simplified').innerHTML =
-      `<div class="col-text">${simplified.replace(/\n/g,'<br>')}</div>`;
-    document.getElementById('esl-listen-btn').disabled = false;
-  } catch(e) {
-    document.getElementById('esl-simplified').innerHTML =
-      '<div style="color:var(--error);font-size:12px;padding:12px 0">Simplification failed. Check your connection.</div>';
-  }
-}
 
 function listenToSimplified() {
   if (!S.simplifiedText) return;
-  const saved = S.text;
-  S.text = S.simplifiedText;
   startAudio();
-  // restore after audio loaded
-  setTimeout(() => { S.text = saved; }, 100);
 }
 
 function copySimplified() {
